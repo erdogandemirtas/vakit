@@ -5,9 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/MainScene.unity
+    guid: 3fc8acdd13e6c734bafef6554d6fdbcd
+  - enabled: 1
+    path: Assets/Scenes/CitySelection.unity
+    guid: b75a8f387e2d53749966cc7520687b97
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: e82541e76215b944a9a27436c8395c6a, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 8d0cd3a6b21f08b43927151ea5d6bd2e, type: 2}
