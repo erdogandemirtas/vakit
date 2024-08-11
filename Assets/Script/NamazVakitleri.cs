@@ -113,13 +113,31 @@ public class NamazVakitleri : MonoBehaviour
 
         cityDropdown.AddOptions(cityNames);
 
-        // Ýlk þehir için vakitleri çek
-        GetNamazVakitleri(cities[0].Value);
+        // Önceki þehir tercihini yükle
+        LoadCitySelection();
 
         // Seçim deðiþtiðinde güncelle
         cityDropdown.onValueChanged.AddListener(delegate {
+            SaveCitySelection(cities[cityDropdown.value].Value);
             GetNamazVakitleri(cities[cityDropdown.value].Value);
         });
+    }
+
+    private void LoadCitySelection()
+    {
+        string savedCity = PlayerPrefs.GetString("SelectedCity", cities[0].Value); // Varsayýlan olarak ilk þehir
+        int cityIndex = cities.FindIndex(city => city.Value == savedCity);
+        if (cityIndex >= 0)
+        {
+            cityDropdown.value = cityIndex;
+            GetNamazVakitleri(savedCity);
+        }
+    }
+
+    private void SaveCitySelection(string cityName)
+    {
+        PlayerPrefs.SetString("SelectedCity", cityName);
+        PlayerPrefs.Save();
     }
 
     private void GetNamazVakitleri(string cityName)
