@@ -18,8 +18,8 @@ public class NamazVakitleri : MonoBehaviour
     public TextMeshProUGUI aksamText;
     public TextMeshProUGUI yatsiText;
     public TextMeshProUGUI remainingTimeText;
-    public TextMeshProUGUI selectedCityText; // Seçilen þehir için Text bileþeni
-    public TextMeshProUGUI dateText; // Tarih için Text bileþeni
+    public TextMeshProUGUI selectedCityText;
+    public TextMeshProUGUI dateText;
     public Button backButton;
 
     private string baseApiUrl = "https://api.aladhan.com/v1/timingsByCity";
@@ -35,8 +35,8 @@ public class NamazVakitleri : MonoBehaviour
             return;
         }
 
-        selectedCityText.text = $"{savedCity}"; // Þehir bilgisini ekranda göster
-        dateText.text = $"{DateTime.Now.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR"))}"; // Tarih bilgisini ekranda göster
+        selectedCityText.text = $"{savedCity}";
+        dateText.text = $"{DateTime.Now.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR"))}";
         GetNamazVakitleri(savedCity);
 
         if (backButton != null)
@@ -92,82 +92,16 @@ public class NamazVakitleri : MonoBehaviour
 
                 string[] timeFormats = { "HH:mm:ss", "HH:mm" };
 
-                DateTime parsedDateTime;
-                DateTime utcDateTime;
-
-                // Ýmsak
-                if (DateTime.TryParseExact(timings.Fajr, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
-                {
-                    utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-                    prayerTimes.Add(utcDateTime);
-                }
-                else
-                {
-                    Debug.LogError("Geçersiz Ýmsak tarihi formatý: " + timings.Fajr);
-                }
-
-                // Güneþ
-                if (DateTime.TryParseExact(timings.Sunrise, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
-                {
-                    utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-                    prayerTimes.Add(utcDateTime);
-                }
-                else
-                {
-                    Debug.LogError("Geçersiz Güneþ tarihi formatý: " + timings.Sunrise);
-                }
-
-                // Öðle
-                if (DateTime.TryParseExact(timings.Dhuhr, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
-                {
-                    utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-                    prayerTimes.Add(utcDateTime);
-                }
-                else
-                {
-                    Debug.LogError("Geçersiz Öðle tarihi formatý: " + timings.Dhuhr);
-                }
-
-                // Ýkindi
-                if (DateTime.TryParseExact(timings.Asr, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
-                {
-                    utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-                    prayerTimes.Add(utcDateTime);
-                }
-                else
-                {
-                    Debug.LogError("Geçersiz Ýkindi tarihi formatý: " + timings.Asr);
-                }
-
-                // Akþam
-                if (DateTime.TryParseExact(timings.Maghrib, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
-                {
-                    utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-                    prayerTimes.Add(utcDateTime);
-                }
-                else
-                {
-                    Debug.LogError("Geçersiz Akþam tarihi formatý: " + timings.Maghrib);
-                }
-
-                // Yatsý
-                if (DateTime.TryParseExact(timings.Isha, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
-                {
-                    utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-                    prayerTimes.Add(utcDateTime);
-                }
-                else
-                {
-                    Debug.LogError("Geçersiz Yatsý tarihi formatý: " + timings.Isha);
-                }
+                // Her vakti ekleyin
+                AddPrayerTime(timings.Imsak, timeFormats);
+                AddPrayerTime(timings.Sunrise, timeFormats);
+                AddPrayerTime(timings.Dhuhr, timeFormats);
+                AddPrayerTime(timings.Asr, timeFormats);
+                AddPrayerTime(timings.Maghrib, timeFormats);
+                AddPrayerTime(timings.Isha, timeFormats);
 
                 // Sonuçlarý UI elemanlarýna aktar
-                imsakText.text = prayerTimes.Count > 0 ? prayerTimes[0].ToString("HH:mm") : "";
-                gunesText.text = prayerTimes.Count > 1 ? prayerTimes[1].ToString("HH:mm") : "";
-                oglenText.text = prayerTimes.Count > 2 ? prayerTimes[2].ToString("HH:mm") : "";
-                ikindiText.text = prayerTimes.Count > 3 ? prayerTimes[3].ToString("HH:mm") : "";
-                aksamText.text = prayerTimes.Count > 4 ? prayerTimes[4].ToString("HH:mm") : "";
-                yatsiText.text = prayerTimes.Count > 5 ? prayerTimes[5].ToString("HH:mm") : "";
+                UpdatePrayerTimesUI();
             }
             else
             {
@@ -178,6 +112,30 @@ public class NamazVakitleri : MonoBehaviour
         {
             Debug.LogError("JSON Ayrýþtýrma Hatasý: " + ex.Message);
         }
+    }
+
+    private void AddPrayerTime(string timeString, string[] timeFormats)
+    {
+        DateTime parsedDateTime;
+        if (DateTime.TryParseExact(timeString, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
+        {
+            // UTC olarak sakla
+            prayerTimes.Add(DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc));
+        }
+        else
+        {
+            Debug.LogError($"Geçersiz tarih formatý: {timeString}");
+        }
+    }
+
+    private void UpdatePrayerTimesUI()
+    {
+        imsakText.text = prayerTimes.Count > 0 ? prayerTimes[0].ToString("HH:mm") : "";
+        gunesText.text = prayerTimes.Count > 1 ? prayerTimes[1].ToString("HH:mm") : "";
+        oglenText.text = prayerTimes.Count > 2 ? prayerTimes[2].ToString("HH:mm") : "";
+        ikindiText.text = prayerTimes.Count > 3 ? prayerTimes[3].ToString("HH:mm") : "";
+        aksamText.text = prayerTimes.Count > 4 ? prayerTimes[4].ToString("HH:mm") : "";
+        yatsiText.text = prayerTimes.Count > 5 ? prayerTimes[5].ToString("HH:mm") : "";
     }
 
     private void SchedulePrayerNotifications()
@@ -196,7 +154,7 @@ public class NamazVakitleri : MonoBehaviour
             var notification = new AndroidNotification()
             {
                 Title = $"{prayerNames[i]} Vakti Geldi",
-                Text = $"{prayerNames[i]} vakti geldi. Lütfen namazýnýzý kýlmayý unutmayýn.",
+                Text = $"{prayerNames[i]} Lütfen namazýnýzý kýlmayý unutmayýn.",
                 FireTime = prayerTimes[i],
                 SmallIcon = "icon"
             };
@@ -208,14 +166,19 @@ public class NamazVakitleri : MonoBehaviour
     {
         while (true)
         {
-            DateTime now = DateTime.UtcNow; // UTC'yi kullan
+            DateTime now = DateTime.Now; // Þu anki zamaný yerel saat diliminde al
             string timeToShow = "";
 
             for (int i = 0; i < prayerTimes.Count; i++)
             {
-                if (now < prayerTimes[i])
+                DateTime prayerTimeLocal = prayerTimes[i];
+
+                Debug.Log($"Þu anki Zaman: {now}");
+                Debug.Log($"Namaz Vakti: {prayerTimeLocal}");
+
+                if (now < prayerTimeLocal)
                 {
-                    timeToShow = $"{prayerNames[i]} vakti: {GetRemainingTime(now, prayerTimes[i])}";
+                    timeToShow = $"{prayerNames[i]} vakti: {GetRemainingTime(now, prayerTimeLocal)}";
                     break;
                 }
             }
@@ -231,9 +194,10 @@ public class NamazVakitleri : MonoBehaviour
         }
     }
 
-    private string GetRemainingTime(DateTime now, DateTime prayerTime)
+    private string GetRemainingTime(DateTime now, DateTime prayerTimeLocal)
     {
-        TimeSpan remainingTime = prayerTime - now;
+        TimeSpan remainingTime = prayerTimeLocal - now;
+        Debug.Log($"Kalan Süre: {remainingTime}");
         if (remainingTime.TotalSeconds < 0)
         {
             return "Geçmiþ";
@@ -243,29 +207,30 @@ public class NamazVakitleri : MonoBehaviour
 
     private void OnBackButtonPressed()
     {
+        PlayerPrefs.DeleteKey("SelectedCity");
         SceneManager.LoadScene("CitySelection");
     }
+}
 
-    [System.Serializable]
-    public class AladhanResponse
-    {
-        public Data data;
+[Serializable]
+public class AladhanResponse
+{
+    public AladhanData data;
+}
 
-        [System.Serializable]
-        public class Data
-        {
-            public Timings timings;
+[Serializable]
+public class AladhanData
+{
+    public Timings timings;
+}
 
-            [System.Serializable]
-            public class Timings
-            {
-                public string Fajr;
-                public string Sunrise;
-                public string Dhuhr;
-                public string Asr;
-                public string Maghrib;
-                public string Isha;
-            }
-        }
-    }
+[Serializable]
+public class Timings
+{
+    public string Imsak;
+    public string Sunrise;
+    public string Dhuhr;
+    public string Asr;
+    public string Maghrib;
+    public string Isha;
 }
