@@ -5,7 +5,6 @@ using UnityEngine.Networking;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Notifications.Android;
 using System.Globalization;
 using TMPro;
 
@@ -26,8 +25,13 @@ public class NamazVakitleri : MonoBehaviour
     private List<DateTime> prayerTimes = new List<DateTime>();
     private string[] prayerNames = { "Ýmsak", "Güneþ", "Öðle", "Ýkindi", "Akþam", "Yatsý" };
 
+    private string localPrayerTimesKey = "LocalPrayerTimes";
+
     private void Start()
     {
+        // Ekranýn kapanmasýný engellemek için
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
         string savedCity = PlayerPrefs.GetString("SelectedCity", "");
         if (string.IsNullOrEmpty(savedCity))
         {
@@ -37,7 +41,16 @@ public class NamazVakitleri : MonoBehaviour
 
         selectedCityText.text = $"{savedCity}";
         dateText.text = $"{DateTime.Now.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR"))}";
-        GetNamazVakitleri(savedCity);
+
+        if (LoadLocalPrayerTimes())
+        {
+            UpdatePrayerTimesUI();
+            StartCoroutine(UpdateRemainingTime());
+        }
+        else
+        {
+            GetNamazVakitleri(savedCity);
+        }
 
         if (backButton != null)
         {
@@ -69,7 +82,7 @@ public class NamazVakitleri : MonoBehaviour
             {
                 string jsonResponse = www.downloadHandler.text;
                 ParseJson(jsonResponse);
-                SchedulePrayerNotifications();
+                SaveLocalPrayerTimes();
                 StartCoroutine(UpdateRemainingTime());
             }
             else
@@ -119,8 +132,8 @@ public class NamazVakitleri : MonoBehaviour
         DateTime parsedDateTime;
         if (DateTime.TryParseExact(timeString, timeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDateTime))
         {
-            // UTC olarak sakla
-            prayerTimes.Add(DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc));
+            // Yerel zaman olarak sakla
+            prayerTimes.Add(DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Local));
         }
         else
         {
@@ -136,30 +149,6 @@ public class NamazVakitleri : MonoBehaviour
         ikindiText.text = prayerTimes.Count > 3 ? prayerTimes[3].ToString("HH:mm") : "";
         aksamText.text = prayerTimes.Count > 4 ? prayerTimes[4].ToString("HH:mm") : "";
         yatsiText.text = prayerTimes.Count > 5 ? prayerTimes[5].ToString("HH:mm") : "";
-    }
-
-    private void SchedulePrayerNotifications()
-    {
-        var notificationChannel = new AndroidNotificationChannel()
-        {
-            Id = "prayer_channel",
-            Name = "Prayer Notifications",
-            Importance = Importance.High,
-            Description = "Notification channel for prayer times."
-        };
-        AndroidNotificationCenter.RegisterNotificationChannel(notificationChannel);
-
-        for (int i = 0; i < prayerTimes.Count; i++)
-        {
-            var notification = new AndroidNotification()
-            {
-                Title = $"{prayerNames[i]} Vakti Geldi",
-                Text = $"{prayerNames[i]} Lütfen namazýnýzý kýlmayý unutmayýn.",
-                FireTime = prayerTimes[i],
-                SmallIcon = "icon"
-            };
-            AndroidNotificationCenter.SendNotification(notification, "prayer_channel");
-        }
     }
 
     private IEnumerator UpdateRemainingTime()
@@ -210,6 +199,52 @@ public class NamazVakitleri : MonoBehaviour
         PlayerPrefs.DeleteKey("SelectedCity");
         SceneManager.LoadScene("CitySelection");
     }
+
+    private void OnDestroy()
+    {
+        // Ekran kapanma ayarýný varsayýlan hale döndürmek için
+        Screen.sleepTimeout = SleepTimeout.SystemSetting;
+    }
+
+    private bool LoadLocalPrayerTimes()
+    {
+        string savedData = PlayerPrefs.GetString(localPrayerTimesKey, "");
+        if (!string.IsNullOrEmpty(savedData))
+        {
+            try
+            {
+                LocalPrayerData localData = JsonUtility.FromJson<LocalPrayerData>(savedData);
+                if (localData.date.Date == DateTime.Now.Date)
+                {
+                    prayerTimes = localData.prayerTimes;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Yerel veri yükleme hatasý: " + ex.Message);
+            }
+        }
+        return false;
+    }
+
+    private void SaveLocalPrayerTimes()
+    {
+        try
+        {
+            LocalPrayerData localData = new LocalPrayerData
+            {
+                date = DateTime.Now.Date,
+                prayerTimes = prayerTimes
+            };
+            string json = JsonUtility.ToJson(localData);
+            PlayerPrefs.SetString(localPrayerTimesKey, json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Yerel veri kaydetme hatasý: " + ex.Message);
+        }
+    }
 }
 
 [Serializable]
@@ -233,4 +268,11 @@ public class Timings
     public string Asr;
     public string Maghrib;
     public string Isha;
+}
+
+[Serializable]
+public class LocalPrayerData
+{
+    public DateTime date;
+    public List<DateTime> prayerTimes;
 }
