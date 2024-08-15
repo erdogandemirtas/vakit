@@ -25,8 +25,6 @@ public class NamazVakitleri : MonoBehaviour
     private List<DateTime> prayerTimes = new List<DateTime>();
     private string[] prayerNames = { "Ýmsak", "Güneþ", "Öðle", "Ýkindi", "Akþam", "Yatsý" };
 
-    private string localPrayerTimesKey = "LocalPrayerTimes";
-
     private void Start()
     {
         // Ekranýn kapanmasýný engellemek için
@@ -41,16 +39,7 @@ public class NamazVakitleri : MonoBehaviour
 
         selectedCityText.text = $"{savedCity}";
         dateText.text = $"{DateTime.Now.ToString("dd MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR"))}";
-
-        if (LoadLocalPrayerTimes())
-        {
-            UpdatePrayerTimesUI();
-            StartCoroutine(UpdateRemainingTime());
-        }
-        else
-        {
-            GetNamazVakitleri(savedCity);
-        }
+        GetNamazVakitleri(savedCity);
 
         if (backButton != null)
         {
@@ -82,7 +71,6 @@ public class NamazVakitleri : MonoBehaviour
             {
                 string jsonResponse = www.downloadHandler.text;
                 ParseJson(jsonResponse);
-                SaveLocalPrayerTimes();
                 StartCoroutine(UpdateRemainingTime());
             }
             else
@@ -162,12 +150,9 @@ public class NamazVakitleri : MonoBehaviour
             {
                 DateTime prayerTimeLocal = prayerTimes[i];
 
-                Debug.Log($"Þu anki Zaman: {now}");
-                Debug.Log($"Namaz Vakti: {prayerTimeLocal}");
-
                 if (now < prayerTimeLocal)
                 {
-                    timeToShow = $"{prayerNames[i]} vakti: {GetRemainingTime(now, prayerTimeLocal)}";
+                    timeToShow = $"{prayerNames[i]} vaktine: {GetRemainingTime(now, prayerTimeLocal)}";
                     break;
                 }
             }
@@ -179,7 +164,7 @@ public class NamazVakitleri : MonoBehaviour
 
             remainingTimeText.text = timeToShow;
 
-            yield return new WaitForSeconds(60f); // Güncellemeyi her dakika yap
+            yield return new WaitForSeconds(1f);
         }
     }
 
@@ -205,46 +190,6 @@ public class NamazVakitleri : MonoBehaviour
         // Ekran kapanma ayarýný varsayýlan hale döndürmek için
         Screen.sleepTimeout = SleepTimeout.SystemSetting;
     }
-
-    private bool LoadLocalPrayerTimes()
-    {
-        string savedData = PlayerPrefs.GetString(localPrayerTimesKey, "");
-        if (!string.IsNullOrEmpty(savedData))
-        {
-            try
-            {
-                LocalPrayerData localData = JsonUtility.FromJson<LocalPrayerData>(savedData);
-                if (localData.date.Date == DateTime.Now.Date)
-                {
-                    prayerTimes = localData.prayerTimes;
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("Yerel veri yükleme hatasý: " + ex.Message);
-            }
-        }
-        return false;
-    }
-
-    private void SaveLocalPrayerTimes()
-    {
-        try
-        {
-            LocalPrayerData localData = new LocalPrayerData
-            {
-                date = DateTime.Now.Date,
-                prayerTimes = prayerTimes
-            };
-            string json = JsonUtility.ToJson(localData);
-            PlayerPrefs.SetString(localPrayerTimesKey, json);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("Yerel veri kaydetme hatasý: " + ex.Message);
-        }
-    }
 }
 
 [Serializable]
@@ -268,11 +213,4 @@ public class Timings
     public string Asr;
     public string Maghrib;
     public string Isha;
-}
-
-[Serializable]
-public class LocalPrayerData
-{
-    public DateTime date;
-    public List<DateTime> prayerTimes;
 }
