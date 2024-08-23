@@ -134,11 +134,17 @@ public class MainSceneManager : MonoBehaviour
         DateTime now = DateTime.Now;
         TimeSpan timeRemaining = nextPrayerTime - now;
 
+        if (timeRemaining <= TimeSpan.Zero) // Vakit geldiyse
+        {
+            nextPrayerTime = GetNextPrayerTime(now);
+            timeRemaining = nextPrayerTime - now; // Yeni vakit için kalan süreyi hesapla
+        }
+
         // Sonraki namaz vaktinin ismini belirle
         string nextPrayerName = GetNextPrayerName();
 
         // Sonraki vaktin ismi ve kalan süreyi göster
-        timeRemainingText.text = $"{nextPrayerName} Vaktine: {FormatTimeSpan(timeRemaining)}";
+        timeRemainingText.text = $"{nextPrayerName} Vaktine {FormatTimeSpan(timeRemaining)}";
     }
 
     private IEnumerator UpdateRemainingTime()
