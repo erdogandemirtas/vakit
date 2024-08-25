@@ -15,6 +15,7 @@ public class DropdownOption
 
     public enum OptionType
     {
+        Country,
         City,
         District
     }
@@ -23,8 +24,10 @@ public class DropdownOption
 public class PrayerTimeManager : MonoBehaviour
 {
     public TMP_Dropdown combinedDropdown;
+    private Dictionary<string, string> countryIdMap = new Dictionary<string, string>();
     private Dictionary<string, string> cityIdMap = new Dictionary<string, string>();
     private Dictionary<string, string> districtIdMap = new Dictionary<string, string>();
+    private string selectedCountry;
     private string selectedCity;
     private string selectedDistrict;
 
@@ -36,11 +39,10 @@ public class PrayerTimeManager : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(GetCities());
+        StartCoroutine(GetCountries());
         combinedDropdown.onValueChanged.AddListener(OnDropdownChanged); // Listener'ý burada ekleyin
 
         // Varsayýlan deðeri Label'a yazdýr
-        // Dropdown seçenekleri yüklendiðinde varsayýlan deðeri Label'a atayýn
         combinedDropdown.onValueChanged.AddListener(delegate {
             labelText.text = combinedDropdown.options[combinedDropdown.value].text;
         });
@@ -61,6 +63,12 @@ public class PrayerTimeManager : MonoBehaviour
             {
                 switch (selectedDropdownOption.Type)
                 {
+                    case DropdownOption.OptionType.Country:
+                        selectedCountry = selectedOption;
+                        string countryId = selectedDropdownOption.Id;
+                        StartCoroutine(GetCities(countryId));
+                        break;
+
                     case DropdownOption.OptionType.City:
                         selectedCity = selectedOption;
                         string cityId = selectedDropdownOption.Id;
@@ -81,9 +89,51 @@ public class PrayerTimeManager : MonoBehaviour
 
     private List<DropdownOption> options = new List<DropdownOption>();
 
-    private IEnumerator GetCities()
+    private IEnumerator GetCountries()
     {
-        using (UnityWebRequest webRequest = UnityWebRequest.Get("https://ezanvakti.herokuapp.com/sehirler/2"))
+        using (UnityWebRequest webRequest = UnityWebRequest.Get("https://ezanvakti.herokuapp.com/ulkeler"))
+        {
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                var jsonResponse = webRequest.downloadHandler.text;
+                var countries = JsonConvert.DeserializeObject<List<Country>>(jsonResponse);
+
+                combinedDropdown.ClearOptions();
+                options.Clear();
+
+                combinedDropdown.options.Add(new TMP_Dropdown.OptionData("Ülke Seçiniz"));
+
+                foreach (var country in countries)
+                {
+                    var option = new DropdownOption
+                    {
+                        DisplayName = country.UlkeAdi,
+                        Id = country.UlkeID,
+                        Type = DropdownOption.OptionType.Country
+                    };
+                    options.Add(option);
+                    combinedDropdown.options.Add(new TMP_Dropdown.OptionData(country.UlkeAdi));
+                }
+
+                // Varsayýlan deðeri Label'a yazdýr
+                if (combinedDropdown.options.Count > 0)
+                {
+                    labelText.text = combinedDropdown.options[0].text;
+                }
+            }
+            else
+            {
+                Debug.LogError("Hata: " + webRequest.error);
+            }
+        }
+    }
+
+    private IEnumerator GetCities(string countryId)
+    {
+        string url = $"https://ezanvakti.herokuapp.com/sehirler/{countryId}";
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
         {
             yield return webRequest.SendWebRequest();
 
@@ -230,6 +280,13 @@ public class PrayerTimeManager : MonoBehaviour
     private void LoadNextScene()
     {
         SceneManager.LoadScene("MainScene");
+    }
+
+    [System.Serializable]
+    public class Country
+    {
+        public string UlkeAdi;
+        public string UlkeID;
     }
 
     [System.Serializable]

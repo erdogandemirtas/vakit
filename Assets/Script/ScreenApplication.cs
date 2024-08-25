@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem; // Yeni Giriþ Sistemi için ekle
 using UnityEngine.SceneManagement; // Sahne yönetimi için ekle
 
 public class ScreenApplication : MonoBehaviour
@@ -10,7 +11,7 @@ public class ScreenApplication : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             // Android'de uygulamayý arka plana alma
             if (Application.platform == RuntimePlatform.Android)

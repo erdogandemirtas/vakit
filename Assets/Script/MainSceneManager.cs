@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using static PrayerTimeManager;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class MainSceneManager : MonoBehaviour
 {
@@ -67,7 +69,7 @@ public class MainSceneManager : MonoBehaviour
             aksamText.text = prayerTimes.Aksam;
             yatsiText.text = prayerTimes.Yatsi;
 
-            currentDateText.text = prayerTimes.MiladiTarihUzun;
+            currentDateText.text = $"{prayerTimes.MiladiTarihUzun}\n{prayerTimes.HicriTarihUzun}";
 
             DateTime now = DateTime.Now;
             nextPrayerTime = GetNextPrayerTime(now); // nextPrayerTime burada atanýyor

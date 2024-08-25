@@ -44,7 +44,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/erdog/Documents/GitHub/vakit/.utmp/RelWithDebInfo/1o1m1044/arm64-v8a/GameActivity/cmake_install.cmake")
   include("C:/Users/erdog/Documents/GitHub/vakit/.utmp/RelWithDebInfo/1o1m1044/arm64-v8a/FramePacing/cmake_install.cmake")
 
 endif()
