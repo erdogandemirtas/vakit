@@ -1,5 +1,5 @@
 # ninja log v5
-4	207	7462667224222699	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	6f70fe8a5f989b0e
-208	350	7462667225664078	C:/Users/erdog/Documents/GitHub/vakit/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1o1m1044/obj/arm64-v8a/libswappywrapper.so	11809e7bff83ab0c
-3	188	7462725870233101	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	6f70fe8a5f989b0e
-188	357	7462725871913738	C:/Users/erdog/Documents/GitHub/vakit/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1o1m1044/obj/arm64-v8a/libswappywrapper.so	11809e7bff83ab0c
+2	126	7463296203127596	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	6f70fe8a5f989b0e
+127	242	7463296204280116	C:/Users/erdog/Documents/GitHub/vakit/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1o1m1044/obj/arm64-v8a/libswappywrapper.so	11809e7bff83ab0c
+3	134	7463303278050924	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	6f70fe8a5f989b0e
+134	253	7463303279239968	C:/Users/erdog/Documents/GitHub/vakit/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1o1m1044/obj/arm64-v8a/libswappywrapper.so	11809e7bff83ab0c
