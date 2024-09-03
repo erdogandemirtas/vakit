@@ -28,31 +28,38 @@ public class MainSceneManager : MonoBehaviour
         // Uygulamanýn ilk kez çalýþtýrýlýp çalýþtýrýlmadýðýný kontrol et
         if (!PlayerPrefs.HasKey("AppInitialized"))
         {
-            // Uygulama ilk kez çalýþtýrýlýyor, CitySelection sahnesine yönlendir
             SceneManager.LoadScene("CitySelection");
-
-            // Uygulamanýn ilk kez baþlatýldýðýný belirten anahtarý ayarla
             PlayerPrefs.SetInt("AppInitialized", 1);
             PlayerPrefs.Save();
         }
         else
         {
-            // Uygulama daha önce çalýþtýrýlmýþ, normal iþlemlere devam et
-            ShowPrayerTimes(); // Namaz saatlerini göster
+            string lastUpdateDate = PlayerPrefs.GetString("LastUpdateDate", string.Empty);
+            string todayDate = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (lastUpdateDate != todayDate)
+            {
+                // Güncellenmiþ veriyi al
+                // Bu noktada, verilerin güncel olup olmadýðýný kontrol edin ve güncellemeleri yapýn
+                ShowPrayerTimes();
+            }
+            else
+            {
+                // Önceden kaydedilmiþ verileri göster
+                string prayerTimesJson = PlayerPrefs.GetString("PrayerTimes", null);
+                if (!string.IsNullOrEmpty(prayerTimesJson))
+                {
+                    PrayerTimes savedPrayerTimes = JsonConvert.DeserializeObject<PrayerTimes>(prayerTimesJson);
+                    if (savedPrayerTimes != null)
+                    {
+                        PrayerTimeManager.currentPrayerTimes = savedPrayerTimes;
+                        ShowPrayerTimes(); // Kaydedilmiþ namaz vakitlerini göster
+                    }
+                }
+            }
+
             StartCoroutine(UpdateRemainingTime()); // Kalan süreyi güncelle
             SetDistrictButtonText(); // Seçilen bölgeyi buton metnine yazdýr
-        }
-
-        // Önceden kaydedilmiþ namaz vakitlerini kontrol et
-        string prayerTimesJson = PlayerPrefs.GetString("PrayerTimes", null);
-        if (!string.IsNullOrEmpty(prayerTimesJson))
-        {
-            PrayerTimes savedPrayerTimes = JsonConvert.DeserializeObject<PrayerTimes>(prayerTimesJson);
-            if (savedPrayerTimes != null)
-            {
-                PrayerTimeManager.currentPrayerTimes = savedPrayerTimes;
-                ShowPrayerTimes(); // Kaydedilmiþ namaz vakitlerini göster
-            }
         }
     }
 

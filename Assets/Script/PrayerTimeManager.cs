@@ -257,6 +257,7 @@ public class PrayerTimeManager : MonoBehaviour
 
                         // Namaz vakitlerini PlayerPrefs ile kaydedin
                         PlayerPrefs.SetString("PrayerTimes", JsonConvert.SerializeObject(currentPrayerTimes));
+                        PlayerPrefs.SetString("LastUpdateDate", DateTime.Now.ToString("yyyy-MM-dd")); // Son güncellemeyi kaydedin
 
                         LoadNextScene();
                     }
@@ -312,18 +313,18 @@ public class PrayerTimeManager : MonoBehaviour
         public string Ikindi;
         public string Aksam;
         public string Yatsi;
-        public string AyinSekliURL;
-        public float GreenwichOrtalamaZamani;
-        public string GunesBatis;
-        public string GunesDogus;
-        public string HicriTarihKisa;
-        public string HicriTarihKisaIso8601;
+        // public string AyinSekliURL;
+        // public float GreenwichOrtalamaZamani;
+        // public string GunesBatis;
+        // public string GunesDogus;
+        // public string HicriTarihKisa;
+        // public string HicriTarihKisaIso8601;
         public string HicriTarihUzun;
-        public string HicriTarihUzunIso8601;
+        // public string HicriTarihUzunIso8601;
         public string MiladiTarihKisa;
-        public string MiladiTarihKisaIso8601;
+        // public string MiladiTarihKisaIso8601;
         public string MiladiTarihUzun;
-        public string MiladiTarihUzunIso8601;
-        public string KibleSaati;
+        // public string MiladiTarihUzunIso8601;
+        // public string KibleSaati;
     }
 }
