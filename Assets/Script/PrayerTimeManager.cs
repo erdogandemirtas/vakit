@@ -257,7 +257,6 @@ public class PrayerTimeManager : MonoBehaviour
 
                         // Namaz vakitlerini PlayerPrefs ile kaydedin
                         PlayerPrefs.SetString("PrayerTimes", JsonConvert.SerializeObject(currentPrayerTimes));
-                        PlayerPrefs.SetString("LastUpdateDate", DateTime.Now.ToString("yyyy-MM-dd")); // Son güncellemeyi kaydedin
 
                         LoadNextScene();
                     }
