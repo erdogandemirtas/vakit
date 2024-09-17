@@ -4,10 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using static PrayerTimeManager;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using UnityEngine.Networking;
+using static PrayerTimeManager;
 
 public class MainSceneManager : MonoBehaviour
 {
@@ -25,15 +24,30 @@ public class MainSceneManager : MonoBehaviour
 
     void Start()
     {
-        // Uygulamanýn ilk kez çalýþtýrýlýp çalýþtýrýlmadýðýný kontrol et
-        if (!PlayerPrefs.HasKey("AppInitialized"))
-        {
-            // Uygulama ilk kez çalýþtýrýlýyor, CitySelection sahnesine yönlendir
-            SceneManager.LoadScene("CitySelection");
+        DateTime lastCheckedDate = GetLastCheckedDate();
+        DateTime today = DateTime.Now.Date;
 
-            // Uygulamanýn ilk kez baþlatýldýðýný belirten anahtarý ayarla
-            PlayerPrefs.SetInt("AppInitialized", 1);
-            PlayerPrefs.Save();
+        // Gün deðiþti mi kontrol et
+        if (lastCheckedDate < today)
+        {
+            // Gün deðiþmiþ, ilçe seçim ekranýna yönlendir
+            // Ancak önce seçilmiþ ilçeyi kullanarak namaz vakitlerini güncelle
+            string selectedDistrictId = PlayerPrefs.GetString("SelectedDistrictId", null);
+            if (!string.IsNullOrEmpty(selectedDistrictId))
+            {
+                StartCoroutine(GetPrayerTimes(selectedDistrictId));
+                ShowPrayerTimes(); // Namaz saatlerini göster
+                StartCoroutine(UpdateRemainingTime()); // Kalan süreyi güncelle
+                SetDistrictButtonText(); // Seçilen bölgeyi buton metnine yazdýr
+            }
+            else
+            {
+                // Ýlçe seçilmemiþse ilçe seçim ekranýna yönlendir
+                SceneManager.LoadScene("CitySelection");
+            }
+
+            // Son kontrol edilen tarihi güncelle
+            SetLastCheckedDate(today);
         }
         else
         {
@@ -54,6 +68,80 @@ public class MainSceneManager : MonoBehaviour
                 ShowPrayerTimes(); // Kaydedilmiþ namaz vakitlerini göster
             }
         }
+    }
+    private IEnumerator GetPrayerTimes(string districtId)
+    {
+        string url = $"https://ezanvakti.herokuapp.com/vakitler/{districtId}";
+        Debug.Log($"Fetching prayer times from URL: {url}");
+
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
+        {
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                string jsonResponse = webRequest.downloadHandler.text;
+                Debug.Log($"Fetched prayer times from web: {jsonResponse}");
+
+                var prayerTimesList = JsonConvert.DeserializeObject<List<PrayerTimes>>(jsonResponse);
+
+                if (prayerTimesList != null && prayerTimesList.Count > 0)
+                {
+                    DateTime todayDate = DateTime.Now.Date;
+                    PrayerTimes currentPrayerTimes = null;
+
+                    foreach (var prayerTimes in prayerTimesList)
+                    {
+                        if (DateTime.TryParseExact(prayerTimes.MiladiTarihKisa, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime prayerDate))
+                        {
+                            if (prayerDate.Date == todayDate)
+                            {
+                                currentPrayerTimes = prayerTimes;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogError($"Tarih formatý uyumsuz: {prayerTimes.MiladiTarihKisa}");
+                        }
+                    }
+
+                    if (currentPrayerTimes != null)
+                    {
+                        PrayerTimeManager.currentPrayerTimes = currentPrayerTimes;
+                        PlayerPrefs.SetString("PrayerTimes", JsonConvert.SerializeObject(currentPrayerTimes));
+                        PlayerPrefs.Save();
+                        ShowPrayerTimes();
+                    }
+                    else
+                    {
+                        Debug.LogError("Bugünkü namaz vakitleri bulunamadý.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("Namaz vakitleri listesi boþ veya null.");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Web isteði baþarýsýz: {webRequest.error}");
+            }
+        }
+    }
+
+    private DateTime GetLastCheckedDate()
+    {
+        // Son kontrol edilen tarihi PlayerPrefs'ten al
+        string lastCheckedDateStr = PlayerPrefs.GetString("LastCheckedDate", DateTime.MinValue.ToString("yyyy-MM-dd"));
+        return DateTime.Parse(lastCheckedDateStr);
+    }
+
+    private void SetLastCheckedDate(DateTime date)
+    {
+        // Son kontrol edilen tarihi PlayerPrefs'e kaydet
+        PlayerPrefs.SetString("LastCheckedDate", date.ToString("yyyy-MM-dd"));
+        PlayerPrefs.Save();
     }
 
     public void ShowPrayerTimes()
@@ -87,14 +175,14 @@ public class MainSceneManager : MonoBehaviour
         if (prayerTimes == null) return currentTime;
 
         var prayerTimesList = new List<DateTime>
-    {
-        DateTime.Parse(prayerTimes.Imsak),
-        DateTime.Parse(prayerTimes.Gunes),
-        DateTime.Parse(prayerTimes.Ogle),
-        DateTime.Parse(prayerTimes.Ikindi),
-        DateTime.Parse(prayerTimes.Aksam),
-        DateTime.Parse(prayerTimes.Yatsi)
-    };
+        {
+            DateTime.Parse(prayerTimes.Imsak),
+            DateTime.Parse(prayerTimes.Gunes),
+            DateTime.Parse(prayerTimes.Ogle),
+            DateTime.Parse(prayerTimes.Ikindi),
+            DateTime.Parse(prayerTimes.Aksam),
+            DateTime.Parse(prayerTimes.Yatsi)
+        };
 
         foreach (var prayerTime in prayerTimesList)
         {

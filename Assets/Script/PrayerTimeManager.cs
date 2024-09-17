@@ -87,9 +87,9 @@ public class PrayerTimeManager : MonoBehaviour
         }
     }
 
-    private List<DropdownOption> options = new List<DropdownOption>();
+    public List<DropdownOption> options = new List<DropdownOption>();
 
-    private IEnumerator GetCountries()
+    public IEnumerator GetCountries()
     {
         using (UnityWebRequest webRequest = UnityWebRequest.Get("https://ezanvakti.herokuapp.com/ulkeler"))
         {
@@ -130,7 +130,7 @@ public class PrayerTimeManager : MonoBehaviour
         }
     }
 
-    private IEnumerator GetCities(string countryId)
+    public IEnumerator GetCities(string countryId)
     {
         string url = $"https://ezanvakti.herokuapp.com/sehirler/{countryId}";
         using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
@@ -172,7 +172,7 @@ public class PrayerTimeManager : MonoBehaviour
         }
     }
 
-    private IEnumerator GetDistricts(string cityId)
+    public IEnumerator GetDistricts(string cityId)
     {
         string url = $"https://ezanvakti.herokuapp.com/ilceler/{cityId}";
         using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
@@ -214,7 +214,7 @@ public class PrayerTimeManager : MonoBehaviour
         }
     }
 
-    private IEnumerator GetPrayerTimes(string districtId)
+    public IEnumerator GetPrayerTimes(string districtId)
     {
         string url = $"https://ezanvakti.herokuapp.com/vakitler/{districtId}";
         Debug.Log($"Fetching prayer times from URL: {url}");
@@ -257,6 +257,10 @@ public class PrayerTimeManager : MonoBehaviour
 
                         // Namaz vakitlerini PlayerPrefs ile kaydedin
                         PlayerPrefs.SetString("PrayerTimes", JsonConvert.SerializeObject(currentPrayerTimes));
+
+                        // Seçilen ilçe ID'sini PlayerPrefs'te sakla
+                        PlayerPrefs.SetString("SelectedDistrictId", districtId);
+                        PlayerPrefs.Save();
 
                         LoadNextScene();
                     }

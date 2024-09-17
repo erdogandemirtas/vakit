@@ -538,8 +538,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 904607435}
-  - component: {fileID: 904607436}
   - component: {fileID: 904607437}
+  - component: {fileID: 904607438}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -562,7 +562,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1166493435}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &904607436
+--- !u!114 &904607437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 904607433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf477b57000991f40b685594f4d84a39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &904607438
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -576,18 +588,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   combinedDropdown: {fileID: 1004038933}
   labelText: {fileID: 570021973}
---- !u!114 &904607437
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 904607433}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf477b57000991f40b685594f4d84a39, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &964857397
 GameObject:
   m_ObjectHideFlags: 0
