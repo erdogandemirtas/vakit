@@ -33,10 +33,6 @@ public class PrayerTimeManager : MonoBehaviour
 
     public TMP_Text labelText;
 
-    public static PrayerTimes currentPrayerTimes; // Private yerine public yapýyoruz
-
-    public static PrayerTimes GetCurrentPrayerTimes() => currentPrayerTimes; // Eriþim yöntemi ekliyoruz
-
     void Start()
     {
         StartCoroutine(GetCountries());
@@ -216,69 +212,14 @@ public class PrayerTimeManager : MonoBehaviour
 
     public IEnumerator GetPrayerTimes(string districtId)
     {
-        string url = $"https://ezanvakti.herokuapp.com/vakitler/{districtId}";
-        Debug.Log($"Fetching prayer times from URL: {url}");
+        // Sadece seçilen ilçe ID'sini sakla
+        PlayerPrefs.SetString("SelectedDistrictId", districtId);
+        PlayerPrefs.Save();
 
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
-        {
-            yield return webRequest.SendWebRequest();
+        // Sonraki sahneye git
+        LoadNextScene();
 
-            if (webRequest.result == UnityWebRequest.Result.Success)
-            {
-                string jsonResponse = webRequest.downloadHandler.text;
-                Debug.Log($"Fetched prayer times from web: {jsonResponse}");
-
-                var prayerTimesList = JsonConvert.DeserializeObject<List<PrayerTimes>>(jsonResponse);
-
-                if (prayerTimesList != null && prayerTimesList.Count > 0)
-                {
-                    DateTime todayDate = DateTime.Now.Date;
-                    PrayerTimes currentPrayerTimes = null;
-
-                    foreach (var prayerTimes in prayerTimesList)
-                    {
-                        if (DateTime.TryParseExact(prayerTimes.MiladiTarihKisa, "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime prayerDate))
-                        {
-                            if (prayerDate.Date == todayDate)
-                            {
-                                currentPrayerTimes = prayerTimes;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            Debug.LogError($"Tarih formatý uyumsuz: {prayerTimes.MiladiTarihKisa}");
-                        }
-                    }
-
-                    if (currentPrayerTimes != null)
-                    {
-                        PrayerTimeManager.currentPrayerTimes = currentPrayerTimes;
-
-                        // Namaz vakitlerini PlayerPrefs ile kaydedin
-                        PlayerPrefs.SetString("PrayerTimes", JsonConvert.SerializeObject(currentPrayerTimes));
-
-                        // Seçilen ilçe ID'sini PlayerPrefs'te sakla
-                        PlayerPrefs.SetString("SelectedDistrictId", districtId);
-                        PlayerPrefs.Save();
-
-                        LoadNextScene();
-                    }
-                    else
-                    {
-                        Debug.LogError("Günün tarihi için namaz saatleri bulunamadý.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Namaz saatleri verisi boþ.");
-                }
-            }
-            else
-            {
-                Debug.LogError("Hata: " + webRequest.error);
-            }
-        }
+        yield return null; // Coroutine için dönüþ deðeri
     }
 
     private void LoadNextScene()
@@ -305,29 +246,5 @@ public class PrayerTimeManager : MonoBehaviour
     {
         public string IlceAdi;
         public string IlceID;
-    }
-
-    [System.Serializable]
-    public class PrayerTimes
-    {
-        public string Imsak;
-        public string Gunes;
-        public string Ogle;
-        public string Ikindi;
-        public string Aksam;
-        public string Yatsi;
-        // public string AyinSekliURL;
-        // public float GreenwichOrtalamaZamani;
-        // public string GunesBatis;
-        // public string GunesDogus;
-        // public string HicriTarihKisa;
-        // public string HicriTarihKisaIso8601;
-        public string HicriTarihUzun;
-        // public string HicriTarihUzunIso8601;
-        public string MiladiTarihKisa;
-        // public string MiladiTarihKisaIso8601;
-        public string MiladiTarihUzun;
-        // public string MiladiTarihUzunIso8601;
-        // public string KibleSaati;
     }
 }
